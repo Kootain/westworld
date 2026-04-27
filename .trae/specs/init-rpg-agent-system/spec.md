@@ -122,3 +122,7 @@ graph TD
 - **日志抽象**：严禁使用裸 `print()` 进行调试。必须使用标准 `logging` 模块（或 `loguru`），配置不同级别（INFO, DEBUG, ERROR）。
 - **执行流追踪**：LangGraph 的每个节点在进入和退出时，必须打印 DEBUG 级别的日志，记录当前 State 的关键变化，以便于回溯复杂的认知链条。
 - **容错机制**：对于 LLM 接口调用、数据库读写等外部依赖操作，必须包含 `try-except` 块及重试逻辑，当 LLM 返回非预期 JSON 时，系统需具备 fallback（回退）机制。
+
+### 4.5 接口设计先行 (Interface-First Design)
+- **契约式编程 (Design by Contract)**：在代码实现阶段，**必须优先设计和定义模块的抽象接口（Abstract Base Classes / Protocols）以及输入输出的数据结构（如 Pydantic Models）**，然后再进入具体的内部逻辑编码。
+- **黑盒化与渐进式迭代**：不论模块内部算法（如衰减打分、RAG 检索、思维链推演）有多么复杂，对外暴露的 API 边界必须清晰、极简且稳定。通过接口先行，确保各个核心层（Box, Memory, Agent）能够轻易被 Mock 和替换。这不仅支持系统的并行开发，更为未来的**渐进式迭代**打下基础（例如：初期 LTM 可先用本地 JSON 跑通接口闭环，后续内部升级为 Milvus 向量库时，完全无需重构调用方的逻辑）。
