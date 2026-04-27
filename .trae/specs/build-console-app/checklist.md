@@ -1,0 +1,4 @@
+- [x] `cmd/console_test/main.py` 被正确创建。
+- [x] 所有业务组件（`core`, `io`, `memory`, `box`, `agent`, `graph`）被正确初始化。
+- [x] 交互循环能够正确读取终端输入，驱动 Graph 运行，并输出预期响应。
+- [x] 支持通过退出命令终止交互循环。
