@@ -1,0 +1,7 @@
+- [ ] `docs/design/overall-architecture.md` 文件已创建，包含模块职责规划和接口设计。
+- [ ] `docs/design/io-module.md` 文件已创建，包含详细设计及可能的冲突说明。
+- [ ] `docs/design/box-module.md` 文件已创建，包含详细设计及可能的冲突说明。
+- [ ] `docs/design/memory-module.md` 文件已创建，包含详细设计及可能的冲突说明。
+- [ ] `docs/design/agent-module.md` 文件已创建，包含详细设计及可能的冲突说明。
+- [ ] `docs/design/graph-module.md` 文件已创建，包含详细设计及可能的冲突说明。
+- [ ] `docs/design/core-module.md` 文件已创建，包含详细设计及可能的冲突说明。
