@@ -104,3 +104,9 @@ class MemoryFacade:
 1. **职责边界更清晰**：把带有 LLM 调用的“提炼”动作从底层存储层 (`memory`) 移动到认知层 (`agent` / `graph`) 是正确的。底层只管存储结构和衰减公式，不关心怎么总结大纲。
 2. **依赖传递**：在后续 `agent` 模块设计中，需要增加一个专门的 `ConsolidationNode` 或 `ReflectionNode` 来处理“总结 STM 写入 LTM”的逻辑。
 3. **接口扩展**：`MemoryFacade` 需要向外暴露 `get_all_stm_content()`，以便上层在进行固化时能拿到完整的上下文去调用 LLM。
+
+## 5. 实现反思 (Implementation Reflection)
+- **代码实现**: 在 `src/memory/models.py` 中实现了 `MemoryNode` 并且支持了基于 `decay_rate` 和 `current_time` 的指数衰减公式计算。
+- **短时记忆与长时记忆分离**: `STMManager` 通过 Token 限制（暂时通过字符串长度近似实现）和衰减阈值完成了对近期记忆片段的管理与修剪；`LTMManager` 暂用内存 `List` 和子串匹配模拟了向量检索，方便后续替换为真实的 `Milvus`。
+- **门面模式**: `MemoryFacade` 有效地向外暴露了 `add_stm`, `get_active_stm`, `save_ltm`, `retrieve_ltm` 以及 `get_all_stm_content` 接口，极大简化了上层 (`agent`/`graph`) 与记忆层交互的复杂度。
+- **测试验证**: `tests/test_memory.py` 对 STM 的添加、衰减排序、阈值过滤以及容量上限截断 (prune) 进行了充分的单元测试，确保核心的记忆流转机制工作正常。

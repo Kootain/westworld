@@ -98,3 +98,7 @@ class PrivacyFilter:
    - 否则跳转到 `agent` 的 `perceive` 节点。
    - 最终无论是走完 Agent 流程，还是被 `auto_reply_node` 代回，最终输出前都走 `box_filter_node` 调用 `io`。
 3. **IO 的注入**：`io` 的实例应该在 `main.py` 中初始化，然后注入到 `box` 中，而 `graph` 模块通过调用 `box` 的方法来实现输出，从而彻底解耦 `agent` 与 `io`。
+
+4. **实现反思 (2026-04-27)**：
+   - 在实现 `PrivacyFilter` 时，我们明确在输出渲染逻辑中忽略了 `SoT` 字段（内心独白），从而有效隔离了 Agent 内部思考与外部输出的展现。
+   - `StatusGuard` 与 `SensoryGenerator` 的设计保持简单（或仅依赖外部注入的 TimeManager），使得这些组件极易于编写单元测试，并且可以方便地集成到各种流程和外部框架中。

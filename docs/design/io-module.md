@@ -96,3 +96,9 @@ class OutputAdapter(ABC):
 1. **接口的灵活性**：单一的 `render` 方法不足以支撑丰富的交互形式。在后续 `box` 模块设计中，当 `box` 拦截了玩家请求时，必须调用 `io.render_system_message()` 而非将系统提示混入 `speech`，以保证表现层的语义正确。
 2. **异步IO**：控制台的输入很容易导致整个线程阻塞。在 `ConsoleInputAdapter` 中，必须采用 `run_in_executor` 等异步技巧，这要求上层（`graph` / `box`）调用时必须全程 `await`。
 3. **向下传递的约束**：`box` 模块在设计时，需要依赖扩展后的 `OutputAdapter` 接口，以便正确输出拦截提示。
+
+## 5. 实现反思 (Implementation Reflection)
+- **代码实现**: `src/io/base.py`, `src/io/console.py`, `src/io/factory.py` 均已实现并带有完整的类型注解与异步支持。
+- **工厂方法扩展**: 除了原设计提到的 `get_input_adapter`，也实现了对应的 `get_output_adapter`，确保了对象的统一构造方式。
+- **异步处理**: `ConsoleInputAdapter.receive` 中通过 `asyncio.get_event_loop().run_in_executor` 将阻塞的 `sys.stdin.readline` 放到独立线程中执行，避免了事件循环被卡死。
+- **测试验证**: `tests/test_io.py` 通过 `monkeypatch` 和 `capsys` 对控制台输入输出进行了有效的单元测试覆盖，确保系统消息、普通输出等符合预期。

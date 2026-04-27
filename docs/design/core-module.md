@@ -93,3 +93,9 @@ settings = Settings()
 **反思结论：**
 1. **模型拆分粒度**：起初想把所有 Model 都放在 `core` 中，但反思发现，只有“跨模块共享”的 Model（如 `AgentResponse`, `AgentStatus`）才应放入 `core`。如果某个 Model 仅由 `memory` 内部使用（如 `MemoryNode`），应放在 `memory` 模块内部，以避免 `core` 变得臃肿。
 2. **向下传递的约束**：后续 `io` 和 `memory` 模块在定义内部数据结构时，尽量复用 `core/models.py`，但不要强行将私有模型塞入 `core`。
+
+## 5. 实现反思
+
+**实施记录与改进：**
+1. **配置管理优化**：在实现 `core/config.py` 时，使用了较新版本的 Pydantic V2，将原设计中的 `class Config:` 废弃用法升级为了 `model_config = SettingsConfigDict(env_file=".env")`，使得配置管理符合最新的库标准，消除了相关的弃用警告。
+2. **测试驱动实现**：在编写 `tests/test_core.py` 过程中，验证了 `enums` 的常量映射、`models` 的字段验证、`config` 的默认值加载以及 `utils` 中日志和时间管理器的功能。实现了零外部业务依赖，使得 `core` 模块足够轻量，符合基石模块的设计定位。

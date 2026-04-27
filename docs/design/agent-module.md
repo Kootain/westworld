@@ -86,3 +86,7 @@ class AgentNodes:
 1. **State 依赖过深**：在上述设计中，我们发现 `AgentNodes` 的所有方法签名都是 `(state: Dict) -> Dict`。这意味着 `agent` 模块强依赖于 `graph` 模块对 State 的定义，这在某种程度上破坏了 `agent` 的独立性。
 2. **优化方案向后传递**：为了解决上述问题，后续在 `graph` 模块设计时，我们必须保证 `State TypedDict` 中的字段足够通用（例如仅包含 `messages`, `sensory_data`, `agent_response` 等核心字段）。或者，在 `agent` 模块内部解包 State，调用真正的业务方法：`self._act(sensory_data, stm_context)`，而不是把整个大 State 对象贯穿内部逻辑。
 3. **向 box 的传递**：Agent 生成的 `AgentResponse` 会在 `graph` 流程的最后一步交给 `box` 模块进行过滤。`box` 模块需要负责从 `AgentResponse` 中剔除 `SoT` 并调用 `io` 渲染。
+
+4. **实现反思 (2026-04-27)**：
+   - 在具体实现 `src/agent/nodes.py` 时，由于使用了字典作为 State 类型进行传递，虽然保证了与其他模块的松耦合，但也要求节点内部实现健壮的容错机制（如使用 `state.get()` 并提供默认值），以防止缺少字段时流程崩溃。
+   - 在与大模型交互时，由于模型输出的 JSON 可能包含格式问题或者调用本身抛出异常，因此我们在 `act` 节点中加入了针对 `LLM` 响应的异常捕获与回退机制（Fallback AgentResponse），进一步增强了系统的鲁棒性。

@@ -123,3 +123,10 @@ class WorkflowBuilder:
 1. **解耦的成功**：通过在 `WorkflowBuilder` 中进行“解包调用”（如 `self.agent.act(sensory, stm, ltm)`），我们成功地让 `agent` 和 `box` 模块完全摆脱了对 LangGraph `State` 的强依赖。它们变成了纯粹的业务类，只有 `graph` 模块知道图是怎么流转的。
 2. **IoC（控制反转）的落地**：整个系统的依赖注入（DI）应该放在 `main.py` 中。`main.py` 实例化 `core` 配置、`io` 适配器、`memory` 门面、`box` 容器和 `agent` 节点，最后把它们喂给 `WorkflowBuilder`。
 3. **架构闭环**：至此，从 `core` 到 `graph` 的六个模块已经完成逻辑闭环，每个模块的边界清晰，接口明确，完全符合初期 `docs/system-design.md` 的宏伟目标。
+
+## 5. 实现反思 (2026-04-27)
+
+在实际实现 `graph` 模块时，有以下几点关键反思：
+1. **解耦的彻底执行**：在实现过程中，我们发现原本 `agent` 模块的 Node 方法依然接收完整的 `State` 字典，这与设计文档中“解耦”的思想存在冲突。因此，我们在实现 `graph` 的同时，回溯重构了 `agent.nodes.py` 和对应的测试文件，将方法签名从 `(state: Dict)` 彻底改为具体的业务参数（如 `sensory_data`, `stm_context` 等），真正实现了业务逻辑与 LangGraph 的状态解耦。
+2. **BoxFacade 的引入**：由于 `box` 模块内部包含了 `StatusGuard`、`SensoryGenerator` 和 `PrivacyFilter` 等多个独立组件，为了在 `WorkflowBuilder` 中能够简洁地调用，我们专门引入了 `BoxFacade` 门面模式。这使得 `graph` 模块的图构建器只需与单一的 `BoxFacade` 交互，大大降低了图编排的复杂度。
+3. **异步节点的支持**：LangGraph 能够原生支持异步工作流。我们在 `WorkflowBuilder` 中使用 `async def` 封装所有的节点方法，并使用 `await` 调用下层的业务逻辑（特别是涉及大模型和 IO 输出的步骤），确保了整个图的运行是非阻塞的高效并发模型。
