@@ -1,33 +1,38 @@
 # Tasks
 
-- [ ] Task 1: 项目初始化与 I/O 插件化抽象
-  - [ ] SubTask 1.1: 初始化项目结构（遵循 Clean Code，划分 `box`, `memory`, `agent`, `io`, `graph` 目录）。
-  - [ ] SubTask 1.2: 定义并实现 `InputAdapter` 和 `OutputAdapter` 抽象接口。
-  - [ ] SubTask 1.3: 实现基于 Console 的本地 I/O 插件用于调试。
+基于完善的需求与架构设计文档，我们将整体工程化实施划分为以下几个阶段的独立任务。当前为**需求确认阶段**，后续为**代码实施阶段**。
 
-- [ ] Task 2: 实现记忆模块 (Memory Architecture)
-  - [ ] SubTask 2.1: 定义极短期感官记忆 (Sensory Memory) 数据结构 (`TypedDict` 或 `JSON`)。
-  - [ ] SubTask 2.2: 实现短期记忆 (STM) 模块，包含重要性打分、时间衰减公式及容量阈值逐出逻辑。
-  - [ ] SubTask 2.3: 实现长期记忆 (LTM) 接口抽象，集成基础的向量/关系存储。
-  - [ ] SubTask 2.4: 实现 STM 到 LTM 的定期异步固化 (Memory Consolidation) 逻辑。
+## Phase 1: 需求分析与架构设计 (Current)
+- [x] Task 1.1: 撰写包含功能需求、架构需求、代码规范的完整 PRD 与设计文档 (`spec.md`)。
+- [x] Task 1.2: 对齐 LangGraph 工作流、三级记忆体系、以及 I/O 插件化方案。
 
-- [ ] Task 3: 实现系统容器 (Box Orchestrator)
-  - [ ] SubTask 3.1: 定义角色状态枚举与管理机制 (`Agent_Status`)。
-  - [ ] SubTask 3.2: 实现状态守卫逻辑（不可交互状态的拦截与系统代回）。
-  - [ ] SubTask 3.3: 实现感官合成器（合并玩家 Input 与 Environment Events）。
-  - [ ] SubTask 3.4: 实现隐私屏蔽过滤器（剥离内心独白 SoT，保留对外可见的 Speech 和 Action）。
+## Phase 2: 基础设施与 I/O 抽象开发
+- [ ] Task 2.1: 搭建符合规范的目录结构 (`src/io`, `src/box`, `src/memory`, `src/agent`, `src/graph`, `src/core`)。
+- [ ] Task 2.2: 定义基础数据模型 (使用 Pydantic 定义 `AgentState`, `SensoryData`, `ActionOutput` 等)。
+- [ ] Task 2.3: 实现 `InputAdapter` 和 `OutputAdapter` 抽象基类。
+- [ ] Task 2.4: 实现 `ConsoleAdapter` 以支持后续的本地联调。
+- [ ] Task 2.5: 配置全局 `Logging` 系统。
 
-- [ ] Task 4: 实现智能体认知链 (Agent Brain Sub-Graph)
-  - [ ] SubTask 4.1: 实现感知过滤节点 (Perceive)。
-  - [ ] SubTask 4.2: 实现联想检索节点 (Recall)，基于焦点查询 LTM。
-  - [ ] SubTask 4.3: 实现深度思考节点 (SoT/Planning)。
-  - [ ] SubTask 4.4: 实现多维行为决策节点 (Action/Speech/Status_Change Generation)。
-  - [ ] SubTask 4.5: 使用 LangGraph 将上述节点组装为 Sub-Graph。
+## Phase 3: 核心记忆系统 (Memory System) 开发
+- [ ] Task 3.1: 开发极短期感官记忆 (`SensoryMemory`) 模块。
+- [ ] Task 3.2: 开发短期记忆 (`STM`) 引擎，实现时间与重要性衰减算法 ($V = I \cdot e^{-\lambda(T_{now} - T_{created})}$) 及容量逐出策略。
+- [ ] Task 3.3: 定义长期记忆 (`LTM`) 接口，并使用本地 JSON/SQLite 提供 Mock 实现（预留向量检索扩展）。
+- [ ] Task 3.4: 开发记忆固化 (`Consolidation`) 逻辑，通过 LLM 总结 STM 存入 LTM。
 
-- [ ] Task 5: 构建全局 LangGraph 工作流
-  - [ ] SubTask 5.1: 组装全局 Graph，串联 Box 过滤器、智能体 Sub-Graph 及后处理节点。
-  - [ ] SubTask 5.2: 整合 I/O 插件，实现端到端的整体运行闭环。
+## Phase 4: 系统容器 (Box Orchestrator) 开发
+- [ ] Task 4.1: 实现 `Agent_Status` 枚举与状态管理类。
+- [ ] Task 4.2: 开发 `StatusGuard`（状态守卫）节点，实现对“不可交互”状态的请求拦截。
+- [ ] Task 4.3: 开发 `SensoryGenerator`，合并外部输入与环境数据。
+- [ ] Task 4.4: 开发 `PrivacyFilter`，负责从大模型输出中剥离 `SoT` 内心独白字段。
 
-- [ ] Task 6: 实现“活人感”系统 (Evidence of Life)
-  - [ ] SubTask 6.1: 实现后台 Tick 机制与环境事件自动注入逻辑。
-  - [ ] SubTask 6.2: 实现虚拟朋友圈 (Moments) 异步生成触发器及多模态 Prompt 生成逻辑。
+## Phase 5: 智能体认知链 (Agent Sub-Graph) 开发
+- [ ] Task 5.1: 实现 `Perceive` 节点逻辑及 Prompt 模板。
+- [ ] Task 5.2: 实现 `Recall` 节点逻辑，对接 LTM 进行上下文 RAG。
+- [ ] Task 5.3: 实现 `SoT/Planning` (深度思考) 节点逻辑。
+- [ ] Task 5.4: 实现 `Act` 节点逻辑，使用 Pydantic 约束 LLM 强制输出 JSON (Speech, Action, SoT, Status_Change)。
+
+## Phase 6: 全局 LangGraph 组装与外显系统
+- [ ] Task 6.1: 在 `src/graph` 中定义 State，组装 Box 节点与 Agent Sub-Graph，并配置条件边 (Conditional Edges)。
+- [ ] Task 6.2: 编写测试脚本，跑通端到端的 Console 交互流。
+- [ ] Task 6.3: 开发后台 Tick 机制（时间流逝与自动环境事件注入）。
+- [ ] Task 6.4: 开发“虚拟朋友圈” (Moments) 异步生成流。
